@@ -1,0 +1,83 @@
+org: javierpariansullca
+service: ms-pedidos
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::413507650058:role/LabRole
+  environment:
+    TABLA_PEDIDOS: pedidos-${sls:stage}
+    BUS_PEDIDOS: pedidos-bus-${sls:stage}
+
+functions:
+  crearPedido:
+    handler: handlers/crear_pedido.handler
+    events:
+      - httpApi:
+          path: /pedidos
+          method: POST
+          cors: true
+
+  listarPedidos:
+    handler: handlers/listar_pedidos.handler
+    events:
+      - httpApi:
+          path: /pedidos
+          method: GET
+          cors: true
+
+  consultarEstado:
+    handler: handlers/consultar_estado.handler
+    events:
+      - httpApi:
+          path: /pedidos/{pedido_id}
+          method: GET
+          cors: true
+
+  listarPorEstado:
+    handler: handlers/listar_por_estado.handler
+    events:
+      - httpApi:
+          path: /pedidos/estado/{estado}
+          method: GET
+          cors: true
+
+resources:
+  Resources:
+    TablaPedidos:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: pedidos-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: tenant_id
+            AttributeType: S
+          - AttributeName: pedido_id
+            AttributeType: S
+          - AttributeName: tenant_estado
+            AttributeType: S
+          - AttributeName: fecha_creacion
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tenant_id
+            KeyType: HASH
+          - AttributeName: pedido_id
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: PorEstado
+            KeySchema:
+              - AttributeName: tenant_estado
+                KeyType: HASH
+              - AttributeName: fecha_creacion
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    BusPedidos:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: pedidos-bus-${sls:stage}

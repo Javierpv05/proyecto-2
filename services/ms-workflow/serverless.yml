@@ -1,0 +1,40 @@
+org: javierpariansullca
+service: ms-workflow
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::413507650058:role/LabRole
+  environment:
+    TABLA_PASOS: pedido_pasos-${sls:stage}
+
+functions:
+  avanzarPaso:
+    handler: handlers/avanzar_paso.handler
+    events:
+      - httpApi:
+          path: /pasos/avanzar
+          method: POST
+          cors: true
+
+resources:
+  Resources:
+    TablaPedidoPasos:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: pedido_pasos-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: tenant_id
+            AttributeType: S
+          - AttributeName: paso_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tenant_id
+            KeyType: HASH
+          - AttributeName: paso_id
+            KeyType: RANGE

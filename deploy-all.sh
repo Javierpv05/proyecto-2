@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+STAGE="${1:-dev}"
+
+SERVICES=(ms-catalogo ms-pedidos ms-workflow)
+
+echo "============================================"
+echo "  Desplegando todos los servicios (stage: $STAGE)"
+echo "============================================"
+
+for service in "${SERVICES[@]}"; do
+  echo ""
+  echo ">>> Desplegando $service..."
+  cd "$ROOT/services/$service"
+  serverless deploy --stage "$STAGE"
+  echo "<<< $service desplegado correctamente"
+done
+
+echo ""
+echo "============================================"
+echo "  Todos los servicios desplegados en $STAGE"
+echo "============================================"

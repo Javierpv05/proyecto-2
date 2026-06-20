@@ -1,0 +1,72 @@
+org: javierpariansullca
+service: ms-catalogo
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::413507650058:role/LabRole
+  environment:
+    TABLA_PRODUCTOS: productos-${sls:stage}
+
+functions:
+  listarProductos:
+    handler: handlers/listar_productos.handler
+    events:
+      - httpApi:
+          path: /productos
+          method: GET
+          cors: true
+
+  crearProducto:
+    handler: handlers/crear_producto.handler
+    events:
+      - httpApi:
+          path: /productos
+          method: POST
+          cors: true
+
+  buscarProducto:
+    handler: handlers/buscar_producto.handler
+    events:
+      - httpApi:
+          path: /productos/{producto_id}
+          method: GET
+          cors: true
+
+  modificarProducto:
+    handler: handlers/modificar_producto.handler
+    events:
+      - httpApi:
+          path: /productos/{producto_id}
+          method: PUT
+          cors: true
+
+  eliminarProducto:
+    handler: handlers/eliminar_producto.handler
+    events:
+      - httpApi:
+          path: /productos/{producto_id}
+          method: DELETE
+          cors: true
+
+resources:
+  Resources:
+    TablaProductos:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: productos-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: tenant_id
+            AttributeType: S
+          - AttributeName: producto_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tenant_id
+            KeyType: HASH
+          - AttributeName: producto_id
+            KeyType: RANGE
