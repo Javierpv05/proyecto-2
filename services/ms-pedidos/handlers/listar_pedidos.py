@@ -3,14 +3,11 @@ import os
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
 
-CORS_HEADERS = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-}
 
 
 def handler(event, context):
@@ -24,22 +21,12 @@ def handler(event, context):
 
         pedidos = respuesta.get("Items", [])
 
-        return {
-            "statusCode": 200,
-            "headers": CORS_HEADERS,
-            "body": json.dumps(
-                {
-                    "tenant_id": tenant_id,
-                    "total": len(pedidos),
-                    "pedidos": pedidos,
-                },
-                default=str,
-            ),
-        }
+        return build_response(200, {
+            "tenant_id": tenant_id,
+            "total": len(pedidos),
+            "pedidos": pedidos,
+        })
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": CORS_HEADERS,
-            "body": json.dumps({"error": f"Error al listar pedidos: {str(e)}"}),
-        }
+        log_event("ERROR", f"Error al listar pedidos: {str(e)}")
+        return build_response(500, {"error": f"Error al listar pedidos: {str(e)}"})

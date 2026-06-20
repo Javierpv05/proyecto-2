@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -15,18 +16,8 @@ def handler(event, context):
         producto_id = path_params.get("producto_id")
 
         if not producto_id:
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps(
-                    {
-                        "error": "El parametro 'producto_id' es obligatorio en la ruta"
-                    }
-                ),
-            }
+            log_event("WARN", "Falta producto_id en la ruta")
+            return build_response(400, {"error": "El parametro 'producto_id' es obligatorio en la ruta"})
 
         try:
             tabla.delete_item(
@@ -34,31 +25,11 @@ def handler(event, context):
                 ConditionExpression="attribute_exists(tenant_id) AND attribute_exists(producto_id)",
             )
         except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
-            return {
-                "statusCode": 404,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps({"error": "Producto no encontrado"}),
-            }
+            log_event("INFO", "Producto no encontrado para eliminar", {"producto_id": producto_id})
+            return build_response(404, {"error": "Producto no encontrado"})
 
-        return {
-            "statusCode": 204,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": "",
-        }
+        log_event("INFO", "Producto eliminado exitosamente", {"producto_id": producto_id})
+        return build_response(204, "")
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps(
-                {"error": f"Error al eliminar producto: {str(e)}"}
-            ),
-        }
+        log_event("ERROR", f"Error al eliminar producto: {str(e)}")
+        return build_response(500, {"error": f"Error al eliminar producto: {str(e)}"})

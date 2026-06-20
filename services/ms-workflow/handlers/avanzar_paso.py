@@ -24,6 +24,7 @@ from datetime import datetime, timezone
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLA_PASOS"])
@@ -31,10 +32,6 @@ sfn_client = boto3.client("stepfunctions")
 
 PASOS_VALIDOS = {"COCINA", "DESPACHO", "REPARTO"}
 
-CORS_HEADERS = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-}
 
 
 def handler(event, context):
@@ -49,13 +46,12 @@ def handler(event, context):
 
         # ── Validaciones ──────────────────────────────────────────────────
         if not pedido_id:
-            return _error(400, "El campo 'pedido_id' es obligatorio")
+            log_event("WARN", "El campo pedido_id es obligatorio")
+            return build_response(400, {"error": "El campo 'pedido_id' es obligatorio"})
 
         if paso not in PASOS_VALIDOS:
-            return _error(
-                400,
-                f"Paso inválido '{paso}'. Válidos: {', '.join(sorted(PASOS_VALIDOS))}",
-            )
+            log_event("WARN", f"Paso invalido: {paso}")
+            return build_response(400, {"error": f"Paso inválido '{paso}'. Válidos: {', '.join(sorted(PASOS_VALIDOS))}"})
 
         # ── Buscar el task_token del paso PENDIENTE en DynamoDB ───────────
         respuesta = tabla.query(
@@ -68,10 +64,8 @@ def handler(event, context):
         items = respuesta.get("Items", [])
 
         if not items:
-            return _error(
-                404,
-                f"No se encontró un paso '{paso}' PENDIENTE para el pedido '{pedido_id}'",
-            )
+            log_event("WARN", f"No se encontro un paso {paso} pendiente para {pedido_id}")
+            return build_response(404, {"error": f"No se encontró un paso '{paso}' PENDIENTE para el pedido '{pedido_id}'"})
 
         # Tomamos el más reciente si hay varios (ordenados por fecha_inicio desc)
         paso_pendiente = sorted(items, key=lambda x: x.get("fecha_inicio", ""), reverse=True)[0]
@@ -79,7 +73,8 @@ def handler(event, context):
         paso_id = paso_pendiente["paso_id"]
 
         if not task_token:
-            return _error(500, "El paso pendiente no tiene task_token registrado")
+            log_event("ERROR", "El paso pendiente no tiene task_token")
+            return build_response(500, {"error": "El paso pendiente no tiene task_token registrado"})
 
         fecha_fin = datetime.now(timezone.utc).isoformat()
 
@@ -113,34 +108,24 @@ def handler(event, context):
 
         sfn_client.send_task_success(taskToken=task_token, output=output)
 
-        return {
-            "statusCode": 200,
-            "headers": CORS_HEADERS,
-            "body": json.dumps(
-                {
-                    "mensaje": f"Paso '{paso}' completado. Workflow avanzado.",
-                    "pedido_id": pedido_id,
-                    "tenant_id": tenant_id,
-                    "paso": paso,
-                    "usuario": usuario,
-                    "completado_en": fecha_fin,
-                }
-            ),
-        }
+        log_event("INFO", f"Paso {paso} completado", {"pedido_id": pedido_id})
+        return build_response(200, {
+            "mensaje": f"Paso '{paso}' completado. Workflow avanzado.",
+            "pedido_id": pedido_id,
+            "tenant_id": tenant_id,
+            "paso": paso,
+            "usuario": usuario,
+            "completado_en": fecha_fin,
+        })
 
     except sfn_client.exceptions.TaskDoesNotExist:
-        return _error(404, "El task_token no corresponde a ninguna tarea activa en Step Functions")
+        log_event("ERROR", "Task token does not exist")
+        return build_response(404, {"error": "El task_token no corresponde a ninguna tarea activa en Step Functions"})
 
     except sfn_client.exceptions.TaskTimedOut:
-        return _error(410, "El task_token ha expirado. La tarea ya no está activa")
+        log_event("ERROR", "Task token timed out")
+        return build_response(410, {"error": "El task_token ha expirado. La tarea ya no está activa"})
 
     except Exception as e:
-        return _error(500, f"Error al avanzar el paso: {str(e)}")
-
-
-def _error(status_code: int, mensaje: str) -> dict:
-    return {
-        "statusCode": status_code,
-        "headers": CORS_HEADERS,
-        "body": json.dumps({"error": mensaje}),
-    }
+        log_event("ERROR", f"Error al avanzar paso: {str(e)}")
+        return build_response(500, {"error": f"Error al avanzar el paso: {str(e)}"})

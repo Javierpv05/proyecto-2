@@ -3,14 +3,11 @@ import os
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
 
-CORS_HEADERS = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-}
 
 
 def handler(event, context):
@@ -22,11 +19,8 @@ def handler(event, context):
         tenant_id = query_params.get("tenant_id", "taco-bell")
 
         if not pedido_id:
-            return {
-                "statusCode": 400,
-                "headers": CORS_HEADERS,
-                "body": json.dumps({"error": "El parámetro 'pedido_id' es obligatorio"}),
-            }
+            log_event("WARN", "El parametro pedido_id es obligatorio")
+            return build_response(400, {"error": "El parámetro 'pedido_id' es obligatorio"})
 
         respuesta = tabla.get_item(
             Key={"tenant_id": tenant_id, "pedido_id": pedido_id}
@@ -35,28 +29,11 @@ def handler(event, context):
         pedido = respuesta.get("Item")
 
         if not pedido:
-            return {
-                "statusCode": 404,
-                "headers": CORS_HEADERS,
-                "body": json.dumps(
-                    {
-                        "error": (
-                            f"Pedido '{pedido_id}' no encontrado "
-                            f"para el tenant '{tenant_id}'"
-                        )
-                    }
-                ),
-            }
+            log_event("INFO", "Pedido no encontrado", {"pedido_id": pedido_id})
+            return build_response(404, {"error": f"Pedido '{pedido_id}' no encontrado para el tenant '{tenant_id}'"})
 
-        return {
-            "statusCode": 200,
-            "headers": CORS_HEADERS,
-            "body": json.dumps(pedido, default=str),
-        }
+        return build_response(200, pedido)
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": CORS_HEADERS,
-            "body": json.dumps({"error": f"Error al consultar pedido: {str(e)}"}),
-        }
+        log_event("ERROR", f"Error al consultar pedido: {str(e)}")
+        return build_response(500, {"error": f"Error al consultar pedido: {str(e)}"})

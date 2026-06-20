@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -15,18 +16,8 @@ def handler(event, context):
         tenant_id = (query_params or {}).get("tenant_id") or "taco-bell"
 
         if not producto_id:
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps(
-                    {
-                        "error": "El parametro 'producto_id' es obligatorio en la ruta"
-                    }
-                ),
-            }
+            log_event("WARN", "Falta producto_id en la ruta")
+            return build_response(400, {"error": "El parametro 'producto_id' es obligatorio en la ruta"})
 
         respuesta = tabla.get_item(
             Key={"tenant_id": tenant_id, "producto_id": producto_id}
@@ -34,29 +25,10 @@ def handler(event, context):
 
         item = respuesta.get("Item")
         if not item:
-            return {
-                "statusCode": 404,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps({"error": "Producto no encontrado"}),
-            }
+            log_event("INFO", "Producto no encontrado", {"producto_id": producto_id})
+            return build_response(404, {"error": "Producto no encontrado"})
 
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps({"producto": item}),
-        }
+        return build_response(200, {"producto": item})
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps({"error": f"Error al buscar producto: {str(e)}"}),
-        }
+        log_event("ERROR", f"Error al buscar producto: {str(e)}")
+        return build_response(500, {"error": f"Error al buscar producto: {str(e)}"})

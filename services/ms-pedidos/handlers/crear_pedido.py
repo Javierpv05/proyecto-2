@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timezone
 
 import boto3
+from utils import convert_to_decimal, build_response, log_event, DecimalEncoder
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -11,10 +12,6 @@ tabla = dynamodb.Table(os.environ["TABLE_NAME"])
 events_client = boto3.client("events")
 EVENT_BUS_NAME = os.environ["EVENT_BUS_NAME"]
 
-CORS_HEADERS = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-}
 
 
 def handler(event, context):
@@ -27,18 +24,8 @@ def handler(event, context):
         total = body.get("total")
 
         if not tenant_id or not cliente_nombre or not items or total is None:
-            return {
-                "statusCode": 400,
-                "headers": CORS_HEADERS,
-                "body": json.dumps(
-                    {
-                        "error": (
-                            "Los campos 'tenant_id', 'cliente_nombre', "
-                            "'items' y 'total' son obligatorios"
-                        )
-                    }
-                ),
-            }
+            log_event("WARN", "Campos obligatorios faltantes", {"body": body})
+            return build_response(400, {"error": "Los campos 'tenant_id', 'cliente_nombre', 'items' y 'total' son obligatorios"})
 
         pedido_id = uuid.uuid4().hex
         fecha_creacion = datetime.now(timezone.utc).isoformat()
@@ -48,8 +35,8 @@ def handler(event, context):
             "tenant_id": tenant_id,
             "pedido_id": pedido_id,
             "cliente_nombre": cliente_nombre,
-            "items": items,
-            "total": str(total),
+            "items": convert_to_decimal(items),
+            "total": convert_to_decimal(total),
             "estado": estado,
             "fecha_creacion": fecha_creacion,
             "tenant_estado": f"{tenant_id}#{estado}",
@@ -63,28 +50,21 @@ def handler(event, context):
                 {
                     "Source": "com.pedidos.sistema",
                     "DetailType": "PedidoCreado",
-                    "Detail": json.dumps(pedido),
+                    "Detail": json.dumps(pedido, cls=DecimalEncoder),
                     "EventBusName": EVENT_BUS_NAME,
                 }
             ]
         )
+        
+        log_event("INFO", "Pedido creado y evento publicado", {"pedido_id": pedido_id})
 
-        return {
-            "statusCode": 201,
-            "headers": CORS_HEADERS,
-            "body": json.dumps(
-                {
-                    "mensaje": "Pedido creado exitosamente",
-                    "pedido_id": pedido_id,
-                    "estado": estado,
-                    "fecha_creacion": fecha_creacion,
-                }
-            ),
-        }
+        return build_response(201, {
+            "mensaje": "Pedido creado exitosamente",
+            "pedido_id": pedido_id,
+            "estado": estado,
+            "fecha_creacion": fecha_creacion,
+        })
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": CORS_HEADERS,
-            "body": json.dumps({"error": f"Error al crear pedido: {str(e)}"}),
-        }
+        log_event("ERROR", f"Error al crear pedido: {str(e)}")
+        return build_response(500, {"error": f"Error al crear pedido: {str(e)}"})

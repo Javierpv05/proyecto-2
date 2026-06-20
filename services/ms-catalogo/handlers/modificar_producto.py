@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+from utils import convert_to_decimal, build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -18,18 +19,8 @@ def handler(event, context):
         producto_id = path_params.get("producto_id")
 
         if not producto_id:
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps(
-                    {
-                        "error": "El parametro 'producto_id' es obligatorio en la ruta"
-                    }
-                ),
-            }
+            log_event("WARN", "Falta producto_id en la ruta")
+            return build_response(400, {"error": "El parametro 'producto_id' es obligatorio en la ruta"})
 
         update_parts = []
         attr_names = {}
@@ -43,19 +34,13 @@ def handler(event, context):
                 val = body[campo]
                 if campo == "disponible":
                     val = bool(val)
+                elif campo == "precio":
+                    val = convert_to_decimal(val)
                 attr_values[f":{campo}"] = val
 
         if not update_parts:
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps(
-                    {"error": "No se enviaron campos válidos para actualizar"}
-                ),
-            }
+            log_event("WARN", "No se enviaron campos validos", {"body": body})
+            return build_response(400, {"error": "No se enviaron campos válidos para actualizar"})
 
         try:
             respuesta = tabla.update_item(
@@ -67,33 +52,10 @@ def handler(event, context):
                 ReturnValues="ALL_NEW",
             )
         except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
-            return {
-                "statusCode": 404,
-                "headers": {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                },
-                "body": json.dumps(
-                    {"error": "Producto no encontrado para actualizar"}
-                ),
-            }
+            log_event("INFO", "Producto no encontrado para actualizar", {"producto_id": producto_id})
+            return build_response(404, {"error": "Producto no encontrado para actualizar"})
 
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps({"producto": respuesta["Attributes"]}),
-        }
+        return build_response(200, {"producto": respuesta["Attributes"]})
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps(
-                {"error": f"Error al modificar producto: {str(e)}"}
-            ),
-        }
+        log_event("ERROR", f"Error al modificar producto: {str(e)}")
+        return build_response(500, {"error": f"Error al modificar producto: {str(e)}"})
