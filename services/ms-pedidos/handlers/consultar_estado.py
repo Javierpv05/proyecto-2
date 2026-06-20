@@ -1,38 +1,62 @@
 import json
 import os
+
 import boto3
+from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource("dynamodb")
-tabla = dynamodb.Table(os.environ["TABLA_PEDIDOS"])
+tabla = dynamodb.Table(os.environ["TABLE_NAME"])
+
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+}
 
 
 def handler(event, context):
-    path_params = event.get("pathParameters") or {}
-    query_params = event.get("queryStringParameters") or {}
+    try:
+        path_params = event.get("pathParameters") or {}
+        query_params = event.get("queryStringParameters") or {}
 
-    tenant_id = query_params.get("tenant_id", "taco-bell")
-    pedido_id = path_params.get("pedido_id")
+        pedido_id = path_params.get("pedido_id")
+        tenant_id = query_params.get("tenant_id", "taco-bell")
 
-    respuesta = tabla.get_item(
-        Key={"tenant_id": tenant_id, "pedido_id": pedido_id}
-    )
+        if not pedido_id:
+            return {
+                "statusCode": 400,
+                "headers": CORS_HEADERS,
+                "body": json.dumps({"error": "El parámetro 'pedido_id' es obligatorio"}),
+            }
 
-    item = respuesta.get("Item")
-    if not item:
+        respuesta = tabla.get_item(
+            Key={"tenant_id": tenant_id, "pedido_id": pedido_id}
+        )
+
+        pedido = respuesta.get("Item")
+
+        if not pedido:
+            return {
+                "statusCode": 404,
+                "headers": CORS_HEADERS,
+                "body": json.dumps(
+                    {
+                        "error": (
+                            f"Pedido '{pedido_id}' no encontrado "
+                            f"para el tenant '{tenant_id}'"
+                        )
+                    }
+                ),
+            }
+
         return {
-            "statusCode": 404,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps({"error": "Pedido no encontrado"}),
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps(pedido, default=str),
         }
 
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-        "body": json.dumps({"pedido": item}),
-    }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": f"Error al consultar pedido: {str(e)}"}),
+        }

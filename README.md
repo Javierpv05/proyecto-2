@@ -19,7 +19,7 @@ Cliente → API Gateway (HTTP API) → Lambda (Python 3.12)
 | Servicio       | Descripción                              | Estado     |
 |----------------|------------------------------------------|------------|
 | ms-catalogo    | CRUD de productos por tenant             | Listo      |
-| ms-pedidos     | Creación y consulta de pedidos           | TODO       |
+| ms-pedidos     | Creación y consulta de pedidos           | Listo      |
 | ms-workflow    | Orquestación del flujo de estados        | TODO       |
 
 ## Despliegue

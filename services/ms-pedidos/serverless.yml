@@ -9,41 +9,62 @@ provider:
   region: us-east-1
   iam:
     role: arn:aws:iam::413507650058:role/LabRole
-  environment:
-    TABLA_PEDIDOS: pedidos-${sls:stage}
-    BUS_PEDIDOS: pedidos-bus-${sls:stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/pedidos-${sls:stage}
+        - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/pedidos-${sls:stage}/index/PorEstado
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource:
+        - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/pedidos-bus-${sls:stage}
 
 functions:
   crearPedido:
     handler: handlers/crear_pedido.handler
+    environment:
+      TABLE_NAME: pedidos-${sls:stage}
+      EVENT_BUS_NAME: pedidos-bus-${sls:stage}
     events:
-      - httpApi:
-          path: /pedidos
-          method: POST
-          cors: true
-
-  listarPedidos:
-    handler: handlers/listar_pedidos.handler
-    events:
-      - httpApi:
-          path: /pedidos
-          method: GET
+      - http:
+          path: pedidos
+          method: post
           cors: true
 
   consultarEstado:
     handler: handlers/consultar_estado.handler
+    environment:
+      TABLE_NAME: pedidos-${sls:stage}
     events:
-      - httpApi:
-          path: /pedidos/{pedido_id}
-          method: GET
+      - http:
+          path: pedidos/{pedido_id}
+          method: get
+          cors: true
+
+  listarPedidos:
+    handler: handlers/listar_pedidos.handler
+    environment:
+      TABLE_NAME: pedidos-${sls:stage}
+    events:
+      - http:
+          path: pedidos
+          method: get
           cors: true
 
   listarPorEstado:
     handler: handlers/listar_por_estado.handler
+    environment:
+      TABLE_NAME: pedidos-${sls:stage}
     events:
-      - httpApi:
-          path: /pedidos/estado/{estado}
-          method: GET
+      - http:
+          path: pedidos/estado/{estado}
+          method: get
           cors: true
 
 resources:
@@ -77,7 +98,7 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    BusPedidos:
+    PedidosEventBus:
       Type: AWS::Events::EventBus
       Properties:
         Name: pedidos-bus-${sls:stage}
