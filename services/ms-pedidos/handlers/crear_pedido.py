@@ -48,7 +48,7 @@ def handler(event, context):
         events_client.put_events(
             Entries=[
                 {
-                    "Source": "com.pedidos.sistema",
+                    "Source": "pedidos.app",
                     "DetailType": "PedidoCreado",
                     "Detail": json.dumps(pedido, cls=DecimalEncoder),
                     "EventBusName": EVENT_BUS_NAME,
