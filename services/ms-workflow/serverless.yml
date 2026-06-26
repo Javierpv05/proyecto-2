@@ -11,7 +11,7 @@ provider:
   runtime: python3.12
   region: us-east-1
   iam:
-    role: arn:aws:iam::413507650058:role/LabRole
+    role: arn:aws:iam::777986470706:role/LabRole
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -80,7 +80,7 @@ stepFunctions:
   stateMachines:
     workflowPedido:
       name: WorkflowPedido-${sls:stage}
-      role: arn:aws:iam::413507650058:role/LabRole
+      role: arn:aws:iam::777986470706:role/LabRole
       definition:
         Comment: "Flujo de pedidos: Cocina → Despacho → Reparto (Wait for Callback)"
         StartAt: Cocina
@@ -208,5 +208,5 @@ resources:
         Targets:
           - Arn: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:WorkflowPedido-${sls:stage}
             Id: TargetStateMachine
-            RoleArn: arn:aws:iam::413507650058:role/LabRole
+            RoleArn: arn:aws:iam::777986470706:role/LabRole
             InputPath: "$.detail"
