@@ -33,16 +33,22 @@ fn update context oracle.compartment-id "$COMPARTMENT_ID"
 fn update context api-url "https://functions.$REGION.oraclecloud.com"
 fn update context registry "$REGION.ocir.io/$(oci os ns get --query 'data' --raw-output)/rappi-repo"
 
-# 2. Crear Fn App (Idempotente)
+# 2. Crear Fn App (Idempotente usando CLI de Fn Project)
 echo ""
-echo "[2/5] Verificando/Creando Fn App '$APP_NAME'..."
-APP_ID=$(oci fn app list -c "$COMPARTMENT_ID" --name "$APP_NAME" --query 'data[0].id' --raw-output 2>/dev/null || echo "")
-if [ -z "$APP_ID" ] || [ "$APP_ID" == "None" ]; then
+echo "[2/5] Verificando/Creando Fn App '$APP_NAME' con Fn CLI..."
+# Listar las apps usando fn list apps y buscar si el nombre existe
+APP_EXISTS=$(fn list apps | grep -w "$APP_NAME" || true)
+
+if [ -z "$APP_EXISTS" ]; then
     echo "  -> Creando Fn App '$APP_NAME'..."
-    APP_ID=$(oci fn app create -c "$COMPARTMENT_ID" --name "$APP_NAME" --subnet-ids "[\"$SUBNET_ID\"]" --query 'data.id' --raw-output)
+    fn create app "$APP_NAME" --annotation oracle.com/oci/subnetIds="[\"$SUBNET_ID\"]"
 else
-    echo "  -> Fn App '$APP_NAME' ya existe ($APP_ID)."
+    echo "  -> Fn App '$APP_NAME' ya existe."
 fi
+
+# Obtenemos el App ID usando OCI CLI para poder referenciar la función en el API Gateway más adelante
+# OCI CLI se sigue usando acá solo para obtener el OCID necesario para el Gateway
+APP_ID=$(oci fn app list -c "$COMPARTMENT_ID" --name "$APP_NAME" --query 'data[0].id' --raw-output)
 
 # 3. Desplegar Función con Fn CLI
 echo ""
@@ -52,6 +58,7 @@ cd "$(dirname "$0")/function"
 fn deploy --app "$APP_NAME"
 cd ..
 
+# Necesitamos el OCID de la función para el API Gateway Backend
 FUNC_OCID=$(oci fn function list --app-id "$APP_ID" --name "$FN_NAME" --query 'data[0].id' --raw-output)
 echo "  -> Función OCID: $FUNC_OCID"
 
