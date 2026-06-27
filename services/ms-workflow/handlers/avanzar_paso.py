@@ -24,6 +24,7 @@ from datetime import datetime, timezone
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+import requests
 from utils import build_response, log_event
 
 dynamodb = boto3.resource("dynamodb")
@@ -32,6 +33,26 @@ sfn_client = boto3.client("stepfunctions")
 
 PASOS_VALIDOS = {"COCINA", "DESPACHO", "REPARTO"}
 
+def notificar_oci(pedido_id, estado):
+    oci_url = os.environ.get("OCI_URL")
+    if not oci_url:
+        log_event("WARN", "La variable de entorno OCI_URL no está configurada")
+        return
+
+    payload = {
+        "pedido_id": pedido_id,
+        "estado": estado
+    }
+    try:
+        response = requests.post(oci_url, json=payload, timeout=5)
+        response.raise_for_status()
+        log_event("INFO", f"Notificacion a OCI exitosa: {response.status_code}", {"respuesta": response.text})
+    except requests.exceptions.Timeout:
+        log_event("ERROR", f"Timeout al notificar a OCI para el pedido {pedido_id}")
+    except requests.exceptions.RequestException as e:
+        log_event("ERROR", f"Error de red/HTTP al notificar a OCI: {str(e)}")
+    except Exception as e:
+        log_event("ERROR", f"Error inesperado al notificar a OCI: {str(e)}")
 
 
 def handler(event, context):
@@ -123,6 +144,20 @@ def handler(event, context):
         )
 
         sfn_client.send_task_success(taskToken=task_token, output=output)
+
+        # ── Notificar a OCI ───────────────────────────────────────────────
+        estado_oci = ""
+        if paso == "COCINA":
+            estado_oci = "EN_COCINA"
+        elif paso == "DESPACHO":
+            estado_oci = "EN_DESPACHO"
+        elif paso == "REPARTO":
+            estado_oci = "EN_REPARTO"
+        elif paso == "ENTREGADO":
+            estado_oci = "ENTREGADO"
+
+        if estado_oci:
+            notificar_oci(pedido_id, estado_oci)
 
         log_event("INFO", f"Paso {paso} completado", {"pedido_id": pedido_id})
         return build_response(200, {

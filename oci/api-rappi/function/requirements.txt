@@ -1,1 +1,2 @@
 fdk>=0.1.66
+requests
