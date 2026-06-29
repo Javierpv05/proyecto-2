@@ -23,9 +23,10 @@ export const Menu: React.FC = () => {
     let isMounted = true;
     const fetchProducts = async () => {
       try {
-        const data = await catalogoClient.get<Product[]>('/productos', { requiresAuth: false });
+        const data = await catalogoClient.get<{ items: any[] }>('/productos', { requiresAuth: false });
         if (isMounted) {
-          setProducts(Array.isArray(data) ? data : []);
+          const items = Array.isArray(data?.items) ? data.items : [];
+          setProducts(items.map(p => ({ ...p, id: p.producto_id })));
         }
       } catch (err: any) {
         if (isMounted) {
@@ -84,6 +85,10 @@ export const Menu: React.FC = () => {
       // Intentar extraer el ID del pedido desde la respuesta
       const newOrderId = response.pedido_id || response.id;
       if (newOrderId) {
+        const misPedidos = JSON.parse(localStorage.getItem('mis_pedidos') || '[]');
+        misPedidos.unshift({ id: newOrderId, cliente_nombre: clientName, fecha: new Date().toISOString() });
+        localStorage.setItem('mis_pedidos', JSON.stringify(misPedidos.slice(0, 5)));
+
         navigate(`/pedido/${newOrderId}`);
       } else {
         // En caso de que la respuesta no contenga un ID claro, redirigimos a /pedido para que el usuario pueda buscarlo

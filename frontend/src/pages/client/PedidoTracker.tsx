@@ -25,6 +25,9 @@ export const PedidoTracker: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [searchId, setSearchId] = useState('');
+  const misPedidos: Array<{ id: string; cliente_nombre: string; fecha: string }> = JSON.parse(
+    localStorage.getItem('mis_pedidos') || '[]'
+  );
 
   useEffect(() => {
     if (!pedido_id) return;
@@ -33,9 +36,9 @@ export const PedidoTracker: React.FC = () => {
     
     const fetchPedido = async () => {
       try {
-        const data = await apiClient.get<PedidoData>(`/pedidos/${pedido_id}`, { requiresAuth: false });
+        const data = await apiClient.get<any>(`/pedidos/${pedido_id}`, { requiresAuth: false });
         if (isMounted) {
-          setPedido(data);
+          setPedido({ ...data, id: data.pedido_id });
           setError(null);
         }
       } catch (err: any) {
@@ -67,14 +70,41 @@ export const PedidoTracker: React.FC = () => {
   if (!pedido_id) {
     return (
       <div className="tracker-page">
-        <EmptyState 
-          title="Rastrea tu pedido" 
-          subtitle="Ingresa el código de tu pedido para ver su estado actual." 
-          icon="📦" 
-        />
+        {misPedidos.length > 0 ? (
+          <>
+            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: '16px' }}>Tus pedidos recientes</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+              {misPedidos.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => navigate(`/pedido/${p.id}`)}
+                  style={{
+                    textAlign: 'left',
+                    padding: '16px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    backgroundColor: 'var(--color-surface)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{p.cliente_nombre || 'Pedido'} — {p.id.substring(0, 8)}</div>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-muted)' }}>
+                    {new Date(p.fecha).toLocaleString()}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <EmptyState
+            title="Rastrea tu pedido"
+            subtitle="Ingresa el código de tu pedido para ver su estado actual."
+            icon="📦"
+          />
+        )}
         <form onSubmit={handleSearch} style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', gap: '12px', marginTop: '24px' }}>
-          <Input 
-            placeholder="Ej: abc-123-def" 
+          <Input
+            placeholder="Ej: abc-123-def"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
             style={{ flex: 1 }}

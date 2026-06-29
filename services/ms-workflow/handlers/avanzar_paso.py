@@ -101,7 +101,7 @@ def handler(event, context):
             tabla_pedidos = dynamodb.Table(os.environ["TABLA_PEDIDOS"])
             tabla_pedidos.update_item(
                 Key={"tenant_id": tenant_id, "pedido_id": pedido_id},
-                UpdateExpression="SET tenant_estado = :te, estado_actual = :e, actualizado_en = :t",
+                UpdateExpression="SET tenant_estado = :te, estado = :e, actualizado_en = :t",
                 ExpressionAttributeValues={
                     ":te": f"{tenant_id}#{nuevo_estado}",
                     ":e": nuevo_estado,

@@ -45,7 +45,7 @@ def handler(event, context):
         # 2. Actualizar el estado del pedido en la tabla principal
         tabla_pedidos.update_item(
             Key={"tenant_id": tenant_id, "pedido_id": pedido_id},
-            UpdateExpression="SET tenant_estado = :te, estado_actual = :e, actualizado_en = :t",
+            UpdateExpression="SET tenant_estado = :te, estado = :e, actualizado_en = :t",
             ExpressionAttributeValues={
                 ":te": f"{tenant_id}#{ESTADO_PEDIDO}",
                 ":e": ESTADO_PEDIDO,

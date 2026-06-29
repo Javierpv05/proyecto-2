@@ -12,8 +12,9 @@ export const ProductosAdmin: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const data = await apiClient.get<Product[]>('/productos');
-      setProducts(Array.isArray(data) ? data : []);
+      const data = await apiClient.get<{ items: any[] }>('/productos');
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setProducts(items.map(p => ({ ...p, id: p.producto_id })));
     } catch (err: any) {
       setError(err.message || 'Error al cargar productos');
     } finally {

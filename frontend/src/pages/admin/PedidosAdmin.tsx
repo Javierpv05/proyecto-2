@@ -39,8 +39,9 @@ export const PedidosAdmin: React.FC = () => {
     try {
       const statusParam = tabToStatusMap[activeTab];
       const endpoint = statusParam ? `/pedidos/estado/${statusParam}` : '/pedidos';
-      const data = await pedidosClient.get<Pedido[]>(endpoint);
-      setPedidos(Array.isArray(data) ? data : []);
+      const data = await pedidosClient.get<{ pedidos: any[] }>(endpoint);
+      const pedidos = Array.isArray(data?.pedidos) ? data.pedidos : [];
+      setPedidos(pedidos.map(p => ({ ...p, id: p.pedido_id })));
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Error al cargar pedidos');
@@ -69,6 +70,7 @@ export const PedidosAdmin: React.FC = () => {
     let nextStep = 'COCINA';
     if (selectedPedido.estado === 'EN_COCINA') nextStep = 'DESPACHO';
     else if (selectedPedido.estado === 'EN_DESPACHO') nextStep = 'REPARTO';
+    else if (selectedPedido.estado === 'EN_REPARTO') nextStep = 'REPARTO';
 
     try {
       await workflowClient.post('/pasos/avanzar', {
@@ -145,7 +147,7 @@ export const PedidosAdmin: React.FC = () => {
                     <Badge status={p.estado} />
                   </td>
                   <td style={{ padding: '16px' }}>
-                    {p.estado !== 'ENTREGADO' && p.estado !== 'EN_REPARTO' && (
+                    {p.estado !== 'ENTREGADO' && (
                       <Button variant="primary" size="sm" onClick={() => handleAvanzar(p)}>Avanzar</Button>
                     )}
                   </td>
@@ -172,8 +174,9 @@ export const PedidosAdmin: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input type="radio" checked readOnly />
                 <label>
-                  {selectedPedido.estado === 'RECIBIDO' ? 'COCINA' : 
-                   selectedPedido.estado === 'EN_COCINA' ? 'DESPACHO' : 'REPARTO'}
+                  {selectedPedido.estado === 'RECIBIDO' ? 'EN COCINA' :
+                   selectedPedido.estado === 'EN_COCINA' ? 'EN DESPACHO' :
+                   selectedPedido.estado === 'EN_DESPACHO' ? 'EN REPARTO' : 'ENTREGADO'}
                 </label>
               </div>
             </div>

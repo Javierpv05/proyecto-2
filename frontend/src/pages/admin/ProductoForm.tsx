@@ -28,14 +28,14 @@ export const ProductoForm: React.FC = () => {
       let isMounted = true;
       const fetchProduct = async () => {
         try {
-          const data = await apiClient.get<Product>(`/productos/${id}`);
+          const data = await apiClient.get<{ producto: Product }>(`/productos/${id}`);
           if (isMounted) {
             setFormData({
-              nombre: data.nombre,
-              precio: data.precio.toString(),
-              descripcion: data.descripcion || '',
-              disponible: data.disponible,
-              imagen_url: data.imagen_url || ''
+              nombre: data.producto.nombre,
+              precio: data.producto.precio.toString(),
+              descripcion: data.producto.descripcion || '',
+              disponible: data.producto.disponible,
+              imagen_url: data.producto.imagen_url || ''
             });
           }
         } catch (err: any) {

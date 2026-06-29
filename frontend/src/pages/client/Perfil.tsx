@@ -31,9 +31,9 @@ export const Perfil: React.FC = () => {
       }
       
       try {
-        const data = await apiClient.get<UserProfile>('/auth/usuario');
+        const data = await apiClient.get<{ usuario: UserProfile }>('/auth/usuario');
         if (isMounted) {
-          setUser(data);
+          setUser(data.usuario);
         }
       } catch (err: any) {
         if (isMounted) {

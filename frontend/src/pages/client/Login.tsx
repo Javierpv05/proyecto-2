@@ -23,8 +23,8 @@ export const Login: React.FC = () => {
       }
 
       try {
-        const usuario = await apiClient.get<{ rol: string }>('/auth/usuario');
-        localStorage.setItem('rol', usuario.rol);
+        const data = await apiClient.get<{ usuario: { rol: string } }>('/auth/usuario');
+        localStorage.setItem('rol', data.usuario.rol);
       } catch {
         localStorage.removeItem('rol');
       }

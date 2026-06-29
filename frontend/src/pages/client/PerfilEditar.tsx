@@ -27,11 +27,11 @@ export const PerfilEditar: React.FC = () => {
       }
       
       try {
-        const data = await apiClient.get<any>('/auth/usuario');
+        const data = await apiClient.get<{ usuario: any }>('/auth/usuario');
         if (isMounted) {
           setFormData({
-            nombre: data.nombre || '',
-            telefono: data.telefono || '',
+            nombre: data.usuario.nombre || '',
+            telefono: data.usuario.telefono || '',
           });
         }
       } catch (err: any) {
