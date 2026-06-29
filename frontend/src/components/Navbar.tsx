@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, ClipboardList, UtensilsCrossed, LogOut } from 'lucide-react';
+import { ShoppingCart, User, ClipboardList, UtensilsCrossed, LogOut, Bike, Drumstick } from 'lucide-react';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -28,7 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, userRole }) => {
       <nav className="navbar">
         <div className="navbar-container">
           <Link to="/admin/pedidos" className="navbar-logo">
-            Popeyes <span className="navbar-role-badge">Panel trabajador</span>
+            <Drumstick size={26} strokeWidth={2.2} /> Popeyes <span className="navbar-role-badge">Panel trabajador</span>
           </Link>
 
           <div className="navbar-links-desktop">
@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, userRole }) => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/menu" className="navbar-logo">
-          Popeyes
+          <Drumstick size={26} strokeWidth={2.2} /> Popeyes
         </Link>
 
         <div className="navbar-links-desktop">
@@ -69,6 +69,9 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, userRole }) => {
           <Link to="/pedido" className={`navbar-link ${isActive('/pedido') ? 'active' : ''}`}>Mi Pedido</Link>
           <Link to="/perfil" className={`navbar-link ${isActive('/perfil') ? 'active' : ''}`}>
             {userRole ? 'Perfil' : 'Acceso trabajador'}
+          </Link>
+          <Link to="/rappi-demo" className={`navbar-link ${isActive('/rappi-demo') ? 'active' : ''}`}>
+            🛵 Demo Rappi
           </Link>
         </div>
 
@@ -79,6 +82,9 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, userRole }) => {
           </Link>
           <Link to="/perfil" className="navbar-profile-icon">
             <User size={24} />
+          </Link>
+          <Link to="/rappi-demo" className="navbar-profile-icon">
+            <Bike size={24} />
           </Link>
         </div>
       </div>

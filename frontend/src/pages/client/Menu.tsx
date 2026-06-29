@@ -65,6 +65,14 @@ export const Menu: React.FC = () => {
 
   const total = cart.reduce((sum, item) => sum + (item.product.precio * item.quantity), 0);
 
+  const productosPorCategoria = products.reduce<Record<string, Product[]>>((acc, p) => {
+    const categoria = p.categoria || 'Otros';
+    acc[categoria] = acc[categoria] || [];
+    acc[categoria].push(p);
+    return acc;
+  }, {});
+  const categorias = Object.keys(productosPorCategoria);
+
   const handleConfirmOrder = async () => {
     setIsSubmitting(true);
     try {
@@ -107,9 +115,9 @@ export const Menu: React.FC = () => {
   return (
     <div className="menu-page">
       <div className="menu-content">
-        <div className="menu-header">
-          <h1 className="menu-title">Nuestro Menú</h1>
-          <p className="menu-subtitle">Los mejores platos, listos para ti.</p>
+        <div className="menu-hero">
+          <h1 className="menu-title">🍗 El sabor original de Louisiana</h1>
+          <p className="menu-subtitle">Pollo crocante, marinado por horas. Elige tus favoritos y pide en segundos.</p>
         </div>
 
         {isLoading ? (
@@ -129,11 +137,16 @@ export const Menu: React.FC = () => {
         ) : products.length === 0 ? (
           <EmptyState title="El menú estará disponible pronto" icon="🍽" />
         ) : (
-          <div className="products-grid">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} onAdd={handleAddToCart} />
-            ))}
-          </div>
+          categorias.map(categoria => (
+            <div key={categoria} className="menu-category-section">
+              <h2 className="menu-category-title">{categoria}</h2>
+              <div className="products-grid">
+                {productosPorCategoria[categoria].map(product => (
+                  <ProductCard key={product.id} product={product} onAdd={handleAddToCart} />
+                ))}
+              </div>
+            </div>
+          ))
         )}
       </div>
 

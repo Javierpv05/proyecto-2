@@ -9,6 +9,7 @@ export interface Product {
   precio: number;
   disponible: boolean;
   imagen_url?: string;
+  categoria?: string;
 }
 
 interface ProductCardProps {
