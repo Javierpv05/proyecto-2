@@ -30,7 +30,7 @@ provider:
   environment:
     TABLA_PASOS: pedido_pasos-${sls:stage}
     TABLA_PEDIDOS: pedidos-${sls:stage}
-    OCI_URL: https://a6klsygmtxc2nsn4fwytjptfxm.apigateway.us-chicago-1.oci.customer-oci.com/rappi/estado
+    OCI_URL: https://o3tkubrhewdcid2x3drsmmvlay.apigateway.us-chicago-1.oci.customer-oci.com/rappi/estado
 
 
 functions:
