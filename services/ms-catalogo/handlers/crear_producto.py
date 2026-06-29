@@ -27,6 +27,7 @@ def handler(event, context):
             "precio": convert_to_decimal(precio),
             "descripcion": body.get("descripcion", ""),
             "disponible": bool(body.get("disponible", True)),
+            "imagen_url": body.get("imagen_url", ""),
         }
 
         tabla.put_item(Item=producto)

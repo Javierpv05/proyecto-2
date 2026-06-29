@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { pedidosClient as apiClient } from './client';
 import type {
   RappiPedidoRequest,
   CreatePedidoResponse,
@@ -6,9 +6,12 @@ import type {
   NotificarEstadoResponse,
 } from './types';
 
-// En un entorno real, estos endpoints podrían apuntar a un dominio diferente (el API Gateway de OCI).
-// Aquí los mantenemos relativos asumiendo que un proxy los manejaría, o puedes configurar 
-// un BASE_URL diferente en el apiClient para estos casos.
+// Nota: en el flujo real, OCI es quien llama a AWS directamente (ver
+// oci/api-rappi) — este servicio del frontend no se usa en producción,
+// solo serviria si se quisiera simular un pedido de Rappi desde la UI
+// de pruebas. Por eso usa pedidosClient (apunta a AWS /pedidos/externos
+// seria lo correcto, pero ese endpoint exige x-api-key que no debe vivir
+// en el frontend; dejar esto fuera del flujo real es la opcion correcta).
 
 export const rappiService = {
   /**

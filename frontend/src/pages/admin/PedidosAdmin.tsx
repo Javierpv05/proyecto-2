@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/Button';
 import { Badge, type OrderStatus } from '../../components/Badge';
 import { Modal } from '../../components/Modal';
-import { apiClient } from '../../api/client';
+import { pedidosClient, workflowClient } from '../../api/client';
 import { EmptyState } from '../../components/EmptyState';
 
 const tabs = ['Todos', 'Recibidos', 'En cocina', 'En despacho', 'En reparto', 'Entregados'];
@@ -39,7 +39,7 @@ export const PedidosAdmin: React.FC = () => {
     try {
       const statusParam = tabToStatusMap[activeTab];
       const endpoint = statusParam ? `/pedidos/estado/${statusParam}` : '/pedidos';
-      const data = await apiClient.get<Pedido[]>(endpoint);
+      const data = await pedidosClient.get<Pedido[]>(endpoint);
       setPedidos(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err: any) {
@@ -71,8 +71,8 @@ export const PedidosAdmin: React.FC = () => {
     else if (selectedPedido.estado === 'EN_DESPACHO') nextStep = 'REPARTO';
 
     try {
-      await apiClient.post('/pasos/avanzar', {
-        tenant_id: 'madam-tusan',
+      await workflowClient.post('/pasos/avanzar', {
+        tenant_id: import.meta.env.VITE_TENANT_ID,
         pedido_id: selectedPedido.id,
         paso: nextStep,
         observacion: observation

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { apiClient } from '../../api/client';
+import { authClient as apiClient } from '../../api/client';
 import './Login.css';
 
 export const Login: React.FC = () => {
@@ -33,7 +33,7 @@ export const Login: React.FC = () => {
     <div className="login-page">
       <div className="login-panel">
         <div className="login-header">
-          <h1 className="login-title">Madam Tusan</h1>
+          <h1 className="login-title">Popeyes</h1>
           <p className="login-subtitle">El sabor de siempre</p>
         </div>
 

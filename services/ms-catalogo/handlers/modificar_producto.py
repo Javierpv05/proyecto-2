@@ -6,7 +6,7 @@ from utils import convert_to_decimal, build_response, log_event
 dynamodb = boto3.resource("dynamodb")
 tabla = dynamodb.Table(os.environ["TABLE_NAME"])
 
-CAMPOS_PERMITIDOS = ["nombre", "precio", "descripcion", "disponible"]
+CAMPOS_PERMITIDOS = ["nombre", "precio", "descripcion", "disponible", "imagen_url"]
 
 
 def handler(event, context):

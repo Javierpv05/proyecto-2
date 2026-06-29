@@ -17,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, userRole }) => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/menu" className="navbar-logo">
-          Madam Tusan
+          Popeyes
         </Link>
         
         <div className="navbar-links-desktop">

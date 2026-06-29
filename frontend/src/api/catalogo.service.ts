@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { catalogoClient as apiClient } from './client';
 import type {
   Producto,
   CreateProductoRequest,

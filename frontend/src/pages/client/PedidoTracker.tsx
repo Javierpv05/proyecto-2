@@ -5,7 +5,7 @@ import { Badge, type OrderStatus } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { EmptyState } from '../../components/EmptyState';
-import { apiClient } from '../../api/client';
+import { pedidosClient as apiClient } from '../../api/client';
 import './PedidoTracker.css';
 
 interface PedidoData {

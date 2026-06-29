@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { pedidosClient as apiClient } from './client';
 import type {
   Pedido,
   CreatePedidoRequest,

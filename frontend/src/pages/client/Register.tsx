@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { apiClient } from '../../api/client';
+import { authClient as apiClient } from '../../api/client';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export const Register: React.FC = () => {
       await apiClient.post('/auth/registro', {
         ...formData,
         rol: 'cliente',
-        tenant_id: 'madam-tusan'
+        tenant_id: import.meta.env.VITE_TENANT_ID
       }, { requiresAuth: false });
       navigate('/login');
     } catch (err: any) {

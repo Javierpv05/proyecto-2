@@ -5,7 +5,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
 import { EmptyState } from '../../components/EmptyState';
-import { apiClient } from '../../api/client';
+import { catalogoClient, pedidosClient } from '../../api/client';
 import './Menu.css';
 
 export const Menu: React.FC = () => {
@@ -23,7 +23,7 @@ export const Menu: React.FC = () => {
     let isMounted = true;
     const fetchProducts = async () => {
       try {
-        const data = await apiClient.get<Product[]>('/productos', { requiresAuth: false });
+        const data = await catalogoClient.get<Product[]>('/productos', { requiresAuth: false });
         if (isMounted) {
           setProducts(Array.isArray(data) ? data : []);
         }
@@ -67,7 +67,7 @@ export const Menu: React.FC = () => {
     setIsSubmitting(true);
     try {
       const payload = {
-        tenant_id: "madam-tusan",
+        tenant_id: import.meta.env.VITE_TENANT_ID,
         cliente_nombre: clientName,
         items: cart.map(item => ({
           producto_id: item.product.id,
@@ -78,7 +78,7 @@ export const Menu: React.FC = () => {
         total: total
       };
 
-      const response = await apiClient.post<any>('/pedidos', payload, { requiresAuth: false });
+      const response = await pedidosClient.post<any>('/pedidos', payload, { requiresAuth: false });
       setIsModalOpen(false);
       
       // Intentar extraer el ID del pedido desde la respuesta

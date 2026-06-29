@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
-import { apiClient } from '../../api/client';
+import { authClient as apiClient } from '../../api/client';
 import './Perfil.css';
 
 interface UserProfile {

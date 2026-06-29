@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { type Product } from '../../components/ProductCard';
-import { apiClient } from '../../api/client';
+import { catalogoClient as apiClient } from '../../api/client';
 
 export const ProductosAdmin: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);

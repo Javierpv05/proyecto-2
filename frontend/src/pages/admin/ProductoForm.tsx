@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { apiClient } from '../../api/client';
+import { catalogoClient as apiClient } from '../../api/client';
 import { type Product } from '../../components/ProductCard';
 
 export const ProductoForm: React.FC = () => {
@@ -62,7 +62,7 @@ export const ProductoForm: React.FC = () => {
       const payload = {
         ...formData,
         precio: parseFloat(formData.precio),
-        tenant_id: 'madam-tusan'
+        tenant_id: import.meta.env.VITE_TENANT_ID
       };
 
       if (isEditing) {

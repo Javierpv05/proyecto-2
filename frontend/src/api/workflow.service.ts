@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { workflowClient as apiClient } from './client';
 import type {
   AvanzarPasoRequest,
   AvanzarPasoResponse,

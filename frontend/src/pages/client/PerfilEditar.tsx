@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { apiClient } from '../../api/client';
+import { authClient as apiClient } from '../../api/client';
 
 export const PerfilEditar: React.FC = () => {
   const navigate = useNavigate();
