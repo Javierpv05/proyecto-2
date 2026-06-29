@@ -1,0 +1,105 @@
+.stepper-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin: 20px 0;
+  position: relative;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.stepper-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+  background-color: var(--color-surface);
+}
+
+.stepper-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.stepper-line {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-border);
+  z-index: 1;
+}
+
+.stepper-label {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* Completed State */
+.stepper-step.completed .stepper-circle {
+  background-color: var(--color-primary);
+}
+.stepper-step.completed .stepper-line {
+  background-color: var(--color-primary);
+}
+.stepper-step.completed .stepper-label {
+  color: var(--color-text);
+}
+
+/* Active State */
+.stepper-step.active .stepper-circle {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.2);
+  animation: pulse 2s infinite;
+}
+.stepper-step.active .stepper-label {
+  color: var(--color-primary);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(192, 57, 43, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); }
+}
+
+@media (max-width: 640px) {
+  .stepper-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stepper-step {
+    flex-direction: row;
+    height: 60px;
+    width: 100%;
+  }
+
+  .stepper-line {
+    top: 50%;
+    left: 11px;
+    width: 2px;
+    height: 100%;
+  }
+
+  .stepper-label {
+    margin-top: 0;
+    margin-left: 16px;
+    font-size: var(--text-sm);
+  }
+}
