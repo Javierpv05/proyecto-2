@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { type Product } from '../../components/ProductCard';
 import { catalogoClient as apiClient } from '../../api/client';
+import './AdminTable.css';
 
 export const ProductosAdmin: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -58,25 +59,35 @@ export const ProductosAdmin: React.FC = () => {
       ) : products.length === 0 ? (
         <EmptyState title="Agrega tu primer plato al menú" icon="🍜" />
       ) : (
-        <div style={{ overflowX: 'auto', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-card)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '16px' }}>Nombre</th>
-                <th style={{ padding: '16px' }}>Precio</th>
-                <th style={{ padding: '16px' }}>Estado</th>
-                <th style={{ padding: '16px' }}>Acciones</th>
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {products.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: '16px' }}>{p.nombre}</td>
-                  <td style={{ padding: '16px' }}>S/. {p.precio.toFixed(2)}</td>
-                  <td style={{ padding: '16px' }}>
-                    {p.disponible ? '✅ Activo' : '❌ Inactivo'}
+                <tr key={p.id}>
+                  <td>
+                    {p.imagen_url ? (
+                      <img src={p.imagen_url} alt={p.nombre} className="admin-thumb" />
+                    ) : (
+                      <div className="admin-thumb-placeholder" />
+                    )}
                   </td>
-                  <td style={{ padding: '16px', display: 'flex', gap: '8px' }}>
+                  <td style={{ fontWeight: 500 }}>{p.nombre}</td>
+                  <td>S/. {p.precio.toFixed(2)}</td>
+                  <td>
+                    <span className={`admin-status-pill ${p.disponible ? 'activo' : 'inactivo'}`}>
+                      {p.disponible ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td style={{ display: 'flex', gap: '8px' }}>
                     <Link to={`/admin/productos/${p.id}`}>
                       <Button variant="secondary" size="sm">Editar</Button>
                     </Link>

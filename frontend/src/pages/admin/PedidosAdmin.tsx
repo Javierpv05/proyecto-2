@@ -4,6 +4,7 @@ import { Badge, type OrderStatus } from '../../components/Badge';
 import { Modal } from '../../components/Modal';
 import { pedidosClient, workflowClient } from '../../api/client';
 import { EmptyState } from '../../components/EmptyState';
+import './AdminTable.css';
 
 const tabs = ['Todos', 'Recibidos', 'En cocina', 'En despacho', 'En reparto', 'Entregados'];
 const tabToStatusMap: Record<string, string> = {
@@ -68,10 +69,16 @@ export const PedidosAdmin: React.FC = () => {
     if (!selectedPedido) return;
     setIsSubmitting(true);
     
-    let nextStep = 'COCINA';
-    if (selectedPedido.estado === 'EN_COCINA') nextStep = 'DESPACHO';
-    else if (selectedPedido.estado === 'EN_DESPACHO') nextStep = 'REPARTO';
-    else if (selectedPedido.estado === 'EN_REPARTO') nextStep = 'REPARTO';
+    // El valor de 'paso' debe ser el paso PENDIENTE ahora mismo (el que está
+    // esperando confirmacion en Step Functions), no el siguiente estado.
+    // RECIBIDO y EN_COCINA -> el paso pendiente es COCINA; EN_DESPACHO -> DESPACHO; EN_REPARTO -> REPARTO.
+    const pasoPorEstado: Record<string, string> = {
+      RECIBIDO: 'COCINA',
+      EN_COCINA: 'COCINA',
+      EN_DESPACHO: 'DESPACHO',
+      EN_REPARTO: 'REPARTO',
+    };
+    const nextStep = pasoPorEstado[selectedPedido.estado] || 'COCINA';
 
     try {
       await workflowClient.post('/pasos/avanzar', {
@@ -97,23 +104,12 @@ export const PedidosAdmin: React.FC = () => {
       
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', marginBottom: '24px' }}>Pedidos</h1>
 
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '8px' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '8px', borderBottom: '1px solid var(--color-border)' }}>
         {tabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '8px 4px',
-              fontSize: 'var(--text-base)',
-              fontFamily: 'var(--font-body)',
-              cursor: 'pointer',
-              color: activeTab === tab ? 'var(--color-primary)' : 'var(--color-muted)',
-              borderBottom: activeTab === tab ? '2px solid var(--color-primary)' : '2px solid transparent',
-              fontWeight: activeTab === tab ? 600 : 400,
-              whiteSpace: 'nowrap'
-            }}
+            className={`admin-tab ${activeTab === tab ? 'active' : ''}`}
           >
             {tab}
           </button>
@@ -121,39 +117,39 @@ export const PedidosAdmin: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div>Cargando pedidos...</div>
+        <div style={{ color: 'var(--color-muted)' }}>Cargando pedidos...</div>
       ) : error ? (
         <EmptyState title="Error" subtitle={error} icon="❌" />
       ) : pedidos.length === 0 ? (
         <EmptyState title="No hay pedidos" subtitle="No se encontraron pedidos en este estado." icon="📦" />
       ) : (
-        <div style={{ overflowX: 'auto', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-card)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '16px' }}>ID (corto)</th>
-                <th style={{ padding: '16px' }}>Cliente</th>
-                <th style={{ padding: '16px' }}>Teléfono</th>
-                <th style={{ padding: '16px' }}>Total</th>
-                <th style={{ padding: '16px' }}>Estado</th>
-                <th style={{ padding: '16px' }}>Acciones</th>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {pedidos.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: '16px' }}>{p.id.substring(0, 8)}</td>
-                  <td style={{ padding: '16px' }}>{p.cliente_nombre || p.cliente}</td>
-                  <td style={{ padding: '16px' }}>
+                <tr key={p.id}>
+                  <td className="admin-id">{p.id.substring(0, 8)}</td>
+                  <td>{p.cliente_nombre || p.cliente}</td>
+                  <td>
                     {p.cliente_telefono ? (
-                      <a href={`tel:${p.cliente_telefono}`}>{p.cliente_telefono}</a>
+                      <a href={`tel:${p.cliente_telefono}`} style={{ color: 'var(--color-info)' }}>{p.cliente_telefono}</a>
                     ) : '-'}
                   </td>
-                  <td style={{ padding: '16px' }}>S/. {p.total?.toFixed(2)}</td>
-                  <td style={{ padding: '16px' }}>
+                  <td style={{ fontWeight: 600 }}>S/. {p.total?.toFixed(2)}</td>
+                  <td>
                     <Badge status={p.estado} />
                   </td>
-                  <td style={{ padding: '16px' }}>
+                  <td>
                     {p.estado !== 'ENTREGADO' && (
                       <Button variant="primary" size="sm" onClick={() => handleAvanzar(p)}>Avanzar</Button>
                     )}
