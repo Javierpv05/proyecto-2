@@ -20,6 +20,9 @@ def handler(event, context):
         )
 
         pedidos = respuesta.get("Items", [])
+        # Orden de llegada (FIFO): el mas antiguo primero, asi cocina atiende
+        # en el mismo orden en que entraron los pedidos.
+        pedidos.sort(key=lambda p: p.get("fecha_creacion", ""))
 
         return build_response(200, {
             "tenant_id": tenant_id,
