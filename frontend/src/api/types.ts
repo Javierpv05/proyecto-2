@@ -102,6 +102,7 @@ export interface ItemPedido {
 export interface CreatePedidoRequest {
   tenant_id: string;
   cliente_nombre: string;
+  cliente_telefono?: string;
   items: ItemPedido[];
   total: number;
 }

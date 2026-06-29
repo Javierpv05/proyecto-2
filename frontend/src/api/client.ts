@@ -87,3 +87,8 @@ export const authClient = createApiClient(import.meta.env.VITE_AUTH_API ?? '');
 export const catalogoClient = createApiClient(import.meta.env.VITE_CATALOGO_API ?? '');
 export const pedidosClient = createApiClient(import.meta.env.VITE_PEDIDOS_API ?? '');
 export const workflowClient = createApiClient(import.meta.env.VITE_WORKFLOW_API ?? '');
+
+// Apunta al API Gateway de OCI (simulador de Rappi), no a AWS directamente.
+// OCI es quien inyecta la x-api-key del lado del servidor antes de
+// reenviar a AWS /pedidos/externos — esa key nunca debe vivir en el navegador.
+export const rappiSimClient = createApiClient(import.meta.env.VITE_OCI_RAPPI_URL ?? '');

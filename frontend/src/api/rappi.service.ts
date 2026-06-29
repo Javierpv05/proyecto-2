@@ -1,33 +1,20 @@
-import { pedidosClient as apiClient } from './client';
+import { rappiSimClient as apiClient } from './client';
 import type {
   RappiPedidoRequest,
   CreatePedidoResponse,
-  NotificarEstadoRequest,
-  NotificarEstadoResponse,
 } from './types';
 
-// Nota: en el flujo real, OCI es quien llama a AWS directamente (ver
-// oci/api-rappi) — este servicio del frontend no se usa en producción,
-// solo serviria si se quisiera simular un pedido de Rappi desde la UI
-// de pruebas. Por eso usa pedidosClient (apunta a AWS /pedidos/externos
-// seria lo correcto, pero ese endpoint exige x-api-key que no debe vivir
-// en el frontend; dejar esto fuera del flujo real es la opcion correcta).
+// Esto SOLO es para pruebas/demo. En el flujo real, Rappi llama directo a
+// OCI (sin frontend de por medio) y OCI reenvia a AWS /pedidos/externos con
+// la x-api-key inyectada de su lado (ver oci/api-rappi). Esta pagina solo
+// imita esa llamada para poder probarla desde el navegador.
 
 export const rappiService = {
   /**
-   * Simulación de integración Multi-Cloud: Redirige directamente al endpoint POST /pedidos de AWS.
-   * POST /pedidos (En API Gateway OCI)
+   * POST /pedidos en el API Gateway de OCI (path-prefix /rappi ya incluido
+   * en VITE_OCI_RAPPI_URL) -> reenvia a AWS /pedidos/externos.
    */
   crearPedido: (data: RappiPedidoRequest): Promise<CreatePedidoResponse> => {
-    // Si la ruta en OCI es /rappi/pedidos, se ajustaría aquí.
-    return apiClient.post<CreatePedidoResponse>('/rappi/pedidos', data, { requiresAuth: false });
-  },
-
-  /**
-   * Apunta hacia la función Serverless de Oracle para notificar actualizaciones de estado.
-   * POST /estado
-   */
-  notificarEstado: (data: NotificarEstadoRequest): Promise<NotificarEstadoResponse> => {
-    return apiClient.post<NotificarEstadoResponse>('/rappi/estado', data, { requiresAuth: false });
+    return apiClient.post<CreatePedidoResponse>('/pedidos', data, { requiresAuth: false });
   },
 };

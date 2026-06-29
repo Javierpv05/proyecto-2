@@ -10,6 +10,7 @@ import { PerfilEditar } from './pages/client/PerfilEditar';
 import { ProductosAdmin } from './pages/admin/Productos';
 import { ProductoForm } from './pages/admin/ProductoForm';
 import { PedidosAdmin } from './pages/admin/PedidosAdmin';
+import { RappiDemo } from './pages/rappi/RappiDemo';
 
 const RequireTrabajador = ({ children }: { children: ReactNode }) => {
   const rol = localStorage.getItem('rol');
@@ -35,6 +36,9 @@ function App() {
           
           <Route path="perfil" element={<Perfil />} />
           <Route path="perfil/editar" element={<PerfilEditar />} />
+
+          {/* Solo para pruebas/demo: simula un pedido entrando por Rappi/OCI */}
+          <Route path="rappi-demo" element={<RappiDemo />} />
 
           {/* Admin Routes (solo rol trabajador) */}
           <Route path="admin/productos" element={<RequireTrabajador><ProductosAdmin /></RequireTrabajador>} />
