@@ -47,4 +47,16 @@ export const catalogoService = {
   eliminarProducto: (producto_id: string): Promise<void> => {
     return apiClient.delete<void>(`${BASE_PATH}/${producto_id}`, { requiresAuth: true });
   },
+
+  /**
+   * Pide una URL prefirmada de S3 para subir la imagen de un producto.
+   * POST /productos/upload-url (Protegido)
+   */
+  obtenerUrlSubidaImagen: (content_type: string): Promise<{ upload_url: string; public_url: string }> => {
+    return apiClient.post<{ upload_url: string; public_url: string }>(
+      `${BASE_PATH}/upload-url`,
+      { content_type },
+      { requiresAuth: true }
+    );
+  },
 };

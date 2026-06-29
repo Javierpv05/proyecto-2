@@ -17,7 +17,7 @@ export const PerfilEditar: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const fetchUser = async () => {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('id_token');
       if (!token) {
         if (isMounted) {
           setError('No hay sesión activa');

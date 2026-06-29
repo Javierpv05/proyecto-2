@@ -30,7 +30,7 @@ function createApiClient(baseUrl: string) {
     };
 
     if (requiresAuth) {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('id_token');
       if (token) {
         config.headers = {
           ...config.headers,

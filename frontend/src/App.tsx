@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Login } from './pages/client/Login';
@@ -9,6 +10,14 @@ import { PerfilEditar } from './pages/client/PerfilEditar';
 import { ProductosAdmin } from './pages/admin/Productos';
 import { ProductoForm } from './pages/admin/ProductoForm';
 import { PedidosAdmin } from './pages/admin/PedidosAdmin';
+
+const RequireTrabajador = ({ children }: { children: ReactNode }) => {
+  const rol = localStorage.getItem('rol');
+  if (rol !== 'trabajador') {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 function App() {
   return (
@@ -27,11 +36,11 @@ function App() {
           <Route path="perfil" element={<Perfil />} />
           <Route path="perfil/editar" element={<PerfilEditar />} />
 
-          {/* Admin Routes */}
-          <Route path="admin/productos" element={<ProductosAdmin />} />
-          <Route path="admin/productos/nuevo" element={<ProductoForm />} />
-          <Route path="admin/productos/:id" element={<ProductoForm />} />
-          <Route path="admin/pedidos" element={<PedidosAdmin />} />
+          {/* Admin Routes (solo rol trabajador) */}
+          <Route path="admin/productos" element={<RequireTrabajador><ProductosAdmin /></RequireTrabajador>} />
+          <Route path="admin/productos/nuevo" element={<RequireTrabajador><ProductoForm /></RequireTrabajador>} />
+          <Route path="admin/productos/:id" element={<RequireTrabajador><ProductoForm /></RequireTrabajador>} />
+          <Route path="admin/pedidos" element={<RequireTrabajador><PedidosAdmin /></RequireTrabajador>} />
 
           <Route path="*" element={<Navigate to="/menu" replace />} />
         </Route>

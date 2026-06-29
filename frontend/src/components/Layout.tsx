@@ -17,8 +17,7 @@ export const Layout: React.FC = () => {
     );
   }
 
-  // TODO: Get user role and cart count from context/store
-  const userRole: string = 'cliente'; 
+  const userRole = localStorage.getItem('rol') || 'cliente';
   const cartCount = 0;
 
   return (

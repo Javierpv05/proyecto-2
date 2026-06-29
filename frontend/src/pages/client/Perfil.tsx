@@ -21,7 +21,7 @@ export const Perfil: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const fetchUser = async () => {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('id_token');
       if (!token) {
         if (isMounted) {
           setError('No hay sesión activa');
@@ -54,7 +54,8 @@ export const Perfil: React.FC = () => {
 
   const handleLogout = () => {
     // Clear tokens
-    localStorage.removeItem('access_token');
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('rol');
     navigate('/login');
   };
 

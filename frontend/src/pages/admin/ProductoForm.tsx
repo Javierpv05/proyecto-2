@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { catalogoClient as apiClient } from '../../api/client';
+import { catalogoService } from '../../api/catalogo.service';
 import { type Product } from '../../components/ProductCard';
 
 export const ProductoForm: React.FC = () => {
@@ -14,10 +15,12 @@ export const ProductoForm: React.FC = () => {
     nombre: '',
     precio: '',
     descripcion: '',
-    disponible: true
+    disponible: true,
+    imagen_url: ''
   });
   const [isLoading, setIsLoading] = useState(isEditing);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,7 +34,8 @@ export const ProductoForm: React.FC = () => {
               nombre: data.nombre,
               precio: data.precio.toString(),
               descripcion: data.descripcion || '',
-              disponible: data.disponible
+              disponible: data.disponible,
+              imagen_url: data.imagen_url || ''
             });
           }
         } catch (err: any) {
@@ -51,6 +55,32 @@ export const ProductoForm: React.FC = () => {
       setFormData({ ...formData, [name]: (e.target as HTMLInputElement).checked });
     } else {
       setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setError(null);
+    try {
+      const { upload_url, public_url } = await catalogoService.obtenerUrlSubidaImagen(file.type);
+
+      const uploadResponse = await fetch(upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file
+      });
+      if (!uploadResponse.ok) {
+        throw new Error('No se pudo subir la imagen a S3');
+      }
+
+      setFormData(prev => ({ ...prev, imagen_url: public_url }));
+    } catch (err: any) {
+      setError(err.message || 'Error al subir la imagen');
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -104,6 +134,19 @@ export const ProductoForm: React.FC = () => {
           <div>
             <label style={{ display: 'block', marginBottom: '8px' }}>Precio (S/.)*</label>
             <Input type="number" name="precio" value={formData.precio} onChange={handleChange} min="0" step="0.01" required />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px' }}>Imagen del plato</label>
+            {formData.imagen_url && (
+              <img
+                src={formData.imagen_url}
+                alt="Vista previa"
+                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '8px', display: 'block' }}
+              />
+            )}
+            <input type="file" accept="image/*" onChange={handleImageChange} disabled={isUploadingImage} />
+            {isUploadingImage && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-muted)' }}> Subiendo imagen...</span>}
           </div>
 
           <div>

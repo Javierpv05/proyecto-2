@@ -18,9 +18,17 @@ export const Login: React.FC = () => {
     setError(null);
     try {
       const response = await apiClient.post<any>('/auth/login', { email, password }, { requiresAuth: false });
-      if (response.access_token) {
-        localStorage.setItem('access_token', response.access_token);
+      if (response.id_token) {
+        localStorage.setItem('id_token', response.id_token);
       }
+
+      try {
+        const usuario = await apiClient.get<{ rol: string }>('/auth/usuario');
+        localStorage.setItem('rol', usuario.rol);
+      } catch {
+        localStorage.removeItem('rol');
+      }
+
       navigate('/menu');
     } catch (err: any) {
       setError(err.message || 'Email o contraseña incorrectos');
