@@ -1,0 +1,15 @@
+{
+  "name": "ms-workflow",
+  "version": "1.0.0",
+  "description": "Microservicio para la orquestación del flujo de pedidos mediante AWS Step Functions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "serverless-step-functions": "^3.30.0"
+  }
+}
