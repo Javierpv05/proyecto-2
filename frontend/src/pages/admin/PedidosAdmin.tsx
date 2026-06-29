@@ -6,10 +6,11 @@ import { pedidosClient, workflowClient } from '../../api/client';
 import { EmptyState } from '../../components/EmptyState';
 import './AdminTable.css';
 
-const tabs = ['Todos', 'Recibidos', 'En cocina', 'En despacho', 'En reparto', 'Entregados'];
+// 'Recibidos' no se muestra: el pedido pasa a EN_COCINA automaticamente en
+// 1-2 segundos al crearse, asi que esa pestana casi siempre estaria vacia.
+const tabs = ['Todos', 'En cocina', 'En despacho', 'En reparto', 'Entregados'];
 const tabToStatusMap: Record<string, string> = {
   'Todos': '',
-  'Recibidos': 'RECIBIDO',
   'En cocina': 'EN_COCINA',
   'En despacho': 'EN_DESPACHO',
   'En reparto': 'EN_REPARTO',
