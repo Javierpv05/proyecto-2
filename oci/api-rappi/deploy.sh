@@ -42,7 +42,7 @@ else
 fi
 
 # Obtener App ID
-APP_ID=$(oci fn app list -c "$COMPARTMENT_ID" --name "$APP_NAME" --query 'data[0].id' --raw-output)
+APP_ID=$(oci fn application list -c "$COMPARTMENT_ID" --display-name "$APP_NAME" --query 'data[0].id' --raw-output)
 
 # 2. Desplegar función
 echo ""
@@ -51,7 +51,7 @@ cd "$(dirname "$0")/function"
 fn deploy --app "$APP_NAME"
 cd ..
 
-FUNC_OCID=$(oci fn function list --app-id "$APP_ID" --name "$FN_NAME" --query 'data[0].id' --raw-output)
+FUNC_OCID=$(oci fn function list --application-id "$APP_ID" --display-name "$FN_NAME" --query 'data[0].id' --raw-output)
 echo "  -> Función OCID: $FUNC_OCID"
 
 # 3. Crear API Gateway
