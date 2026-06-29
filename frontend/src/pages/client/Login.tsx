@@ -22,14 +22,16 @@ export const Login: React.FC = () => {
         localStorage.setItem('id_token', response.id_token);
       }
 
+      let rol = '';
       try {
         const data = await apiClient.get<{ usuario: { rol: string } }>('/auth/usuario');
-        localStorage.setItem('rol', data.usuario.rol);
+        rol = data.usuario.rol;
+        localStorage.setItem('rol', rol);
       } catch {
         localStorage.removeItem('rol');
       }
 
-      navigate('/menu');
+      navigate(rol === 'trabajador' ? '/admin/pedidos' : '/menu');
     } catch (err: any) {
       setError(err.message || 'Email o contraseña incorrectos');
     } finally {

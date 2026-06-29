@@ -19,6 +19,16 @@ const RequireTrabajador = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+// El trabajador no usa el flujo de cliente (menu/carrito/tracker) — si entra
+// a una de esas rutas lo mandamos directo a su panel.
+const BlockTrabajador = ({ children }: { children: ReactNode }) => {
+  const rol = localStorage.getItem('rol');
+  if (rol === 'trabajador') {
+    return <Navigate to="/admin/pedidos" replace />;
+  }
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -29,9 +39,9 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Register />} />
           
-          <Route path="menu" element={<Menu />} />
-          <Route path="pedido" element={<PedidoTracker />} />
-          <Route path="pedido/:pedido_id" element={<PedidoTracker />} />
+          <Route path="menu" element={<BlockTrabajador><Menu /></BlockTrabajador>} />
+          <Route path="pedido" element={<BlockTrabajador><PedidoTracker /></BlockTrabajador>} />
+          <Route path="pedido/:pedido_id" element={<BlockTrabajador><PedidoTracker /></BlockTrabajador>} />
           
           <Route path="perfil" element={<Perfil />} />
           <Route path="perfil/editar" element={<PerfilEditar />} />

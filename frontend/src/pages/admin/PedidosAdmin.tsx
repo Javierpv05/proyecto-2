@@ -19,6 +19,7 @@ interface Pedido {
   id: string;
   cliente_nombre?: string;
   cliente?: string;
+  cliente_telefono?: string;
   total: number;
   estado: OrderStatus;
 }
@@ -132,6 +133,7 @@ export const PedidosAdmin: React.FC = () => {
               <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <th style={{ padding: '16px' }}>ID (corto)</th>
                 <th style={{ padding: '16px' }}>Cliente</th>
+                <th style={{ padding: '16px' }}>Teléfono</th>
                 <th style={{ padding: '16px' }}>Total</th>
                 <th style={{ padding: '16px' }}>Estado</th>
                 <th style={{ padding: '16px' }}>Acciones</th>
@@ -142,6 +144,11 @@ export const PedidosAdmin: React.FC = () => {
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '16px' }}>{p.id.substring(0, 8)}</td>
                   <td style={{ padding: '16px' }}>{p.cliente_nombre || p.cliente}</td>
+                  <td style={{ padding: '16px' }}>
+                    {p.cliente_telefono ? (
+                      <a href={`tel:${p.cliente_telefono}`}>{p.cliente_telefono}</a>
+                    ) : '-'}
+                  </td>
                   <td style={{ padding: '16px' }}>S/. {p.total?.toFixed(2)}</td>
                   <td style={{ padding: '16px' }}>
                     <Badge status={p.estado} />

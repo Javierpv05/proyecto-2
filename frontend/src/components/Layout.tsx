@@ -17,7 +17,7 @@ export const Layout: React.FC = () => {
     );
   }
 
-  const userRole = localStorage.getItem('rol') || 'cliente';
+  const userRole = localStorage.getItem('rol');
   const cartCount = 0;
 
   return (

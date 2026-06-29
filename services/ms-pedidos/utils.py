@@ -48,6 +48,7 @@ def crear_pedido_core(tabla, events_client, event_bus_name, body, origen):
     """
     tenant_id = body.get("tenant_id")
     cliente_nombre = body.get("cliente_nombre")
+    cliente_telefono = body.get("cliente_telefono", "")
     items = body.get("items", [])
     total = body.get("total")
 
@@ -62,6 +63,7 @@ def crear_pedido_core(tabla, events_client, event_bus_name, body, origen):
         "tenant_id": tenant_id,
         "pedido_id": pedido_id,
         "cliente_nombre": cliente_nombre,
+        "cliente_telefono": cliente_telefono,
         "items": convert_to_decimal(items),
         "total": convert_to_decimal(total),
         "estado": estado,

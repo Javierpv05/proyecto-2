@@ -17,6 +17,7 @@ export const Menu: React.FC = () => {
   const [cart, setCart] = useState<{product: Product, quantity: number}[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export const Menu: React.FC = () => {
       const payload = {
         tenant_id: import.meta.env.VITE_TENANT_ID,
         cliente_nombre: clientName,
+        cliente_telefono: clientPhone,
         items: cart.map(item => ({
           producto_id: item.product.id,
           nombre: item.product.nombre,
@@ -177,18 +179,24 @@ export const Menu: React.FC = () => {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="¿A nombre de quién es el pedido?">
         <div className="modal-body-content">
-          <Input 
-            placeholder="Tu nombre" 
-            value={clientName} 
+          <Input
+            placeholder="Tu nombre"
+            value={clientName}
             onChange={e => setClientName(e.target.value)}
+          />
+          <Input
+            placeholder="Tu teléfono (para coordinar la entrega)"
+            value={clientPhone}
+            onChange={e => setClientPhone(e.target.value)}
+            style={{ marginTop: '12px' }}
           />
           <div className="modal-footer">
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-            <Button 
-              variant="primary" 
-              onClick={handleConfirmOrder} 
+            <Button
+              variant="primary"
+              onClick={handleConfirmOrder}
               isLoading={isSubmitting}
-              disabled={!clientName.trim()}
+              disabled={!clientName.trim() || !clientPhone.trim()}
             >
               Confirmar pedido
             </Button>
