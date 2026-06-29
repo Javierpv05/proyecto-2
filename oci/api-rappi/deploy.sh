@@ -14,7 +14,7 @@ FN_NAME="guardar-estado"
 GW_NAME="api-rappi"
 DEPLOYMENT_NAME="rappi-deployment"
 PATH_PREFIX="/rappi"
-AWS_URL="https://xoogztranc.execute-api.us-east-1.amazonaws.com/dev/pedidos/externos"
+AWS_URL="https://25dfc2hxc7.execute-api.us-east-1.amazonaws.com/dev/pedidos/externos"
 
 ROOT_ENV="$(cd "$(dirname "$0")/../.." && pwd)/.env"
 if [ -f "$ROOT_ENV" ]; then
